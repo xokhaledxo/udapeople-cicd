@@ -8,8 +8,6 @@ In this project, I will prove my mastery of the following objectives:
 - Utilize a configuration management tool to accomplish deployment to cloud-based servers.
 - Surface critical server errors for diagnosis using centralized structured logging.
 
-![Diagram of CI/CD Pipeline we will be building.](udapeople.png)
-
 
 ### Built With
 
