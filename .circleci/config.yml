@@ -259,31 +259,39 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
-      - install_awscli
+
+      - add_ssh_keys:
+          fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
+      - attach_workspace:
+          at: ~/
+
       - install_nodejs
+      - install_awscli
       - restore_cache:
           keys: [frontend-build]
-      - run:  
-          name: Install dependencies
-          command: |
-            cd frontend
-            npm install
+      # - run:  
+      #     name: Install dependencies
+      #     command: |
+      #       cd frontend
+      #       npm install
       - run:
           name: Get backend url
           command: |
-            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+            export BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-
+            export API_URL="http://${BACKEND_PUBLIC_IP}:3030"
+            echo "API_URL = ${API_URL}"
             echo API_URL="http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
             cat frontend/.env
-        # export API_URL="http://${BACKEND_IP}:3030"
-        # echo "${API_URL}"
       - run:
           name: Deploy frontend objects
           command: |
             cd frontend
+            sudo npm install -g npm@latest 
+            rm -rf node_modules
+            npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
@@ -308,11 +316,11 @@ jobs:
       - restore_cache:
           keys: [backend-build]    
 
-      - run:
-          name: Install dependencies
-          command: |
-            cd backend
-            npm install 
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       cd backend
+      #       npm install 
       - run:
           name: package backend 
           command: |      
