@@ -303,38 +303,37 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
       - attach_workspace:
-         at: ~/
+          at: ~/
       - restore_cache:
-          keys: [backend-build]
+          keys: [backend-build]    
       - run:
           name: Install dependencies
           command: |
             cd backend
-            npm install 
-
-      - run:
-          name: package backend 
-          command: |      
-             cd backend
-             npm run build
-             tar -czf artifact.tar.gz dist/* package*
-             
-             cd .. 
-             cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            npm install
       - run:
           name: Deploy backend
           command: |
+            cd backend
+            npm install
+            npm run build
+            #tar -czvf artifact.tar.gz dist
+            #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cd ..
+            # Zip the directory
+            tar -czvf artifact.tar.gz backend
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
-          
+            
             cd .circleci/ansible
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-      
-      - destroy-environment
-      - revert-migrations          
 
+      - destroy-environment   
+      - revert-migrations  
+      
 #   smoke-test:
 #     docker:
 #       # Lightweight Docker image 
