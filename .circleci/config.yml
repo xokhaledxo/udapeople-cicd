@@ -305,16 +305,15 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
+
       - checkout
-      - install_awscli
-      - install_ansible
-      - install_nodejs
       - add_ssh_keys:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys: [backend-build]    
+      - install_awscli
+      - install_ansible
+      - install_nodejs    
 
       # - run:
       #     name: Install dependencies
@@ -324,20 +323,29 @@ jobs:
       - run:
           name: package backend 
           command: |      
-             cd backend
-             npm run build
-             tar -czf artifact.tar.gz dist/* package*
-             
-             cd .. 
-             cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            
       - run:
           name: Deploy backend
           command: |
+            cd backend
+
+            npm i 
+            npm run build
+            cd .. 
+ 
+            cd .circleci/ansible
+            mkdir files 
+            cd files
+            tar -c ../../backend -czvf artifact.tar.gz .
+            # tar -czf artifact.tar.gz dist/* package*
+
+            
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
           
-            cd .circleci/ansible
+            echo "inventory.txt content is: "
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       
