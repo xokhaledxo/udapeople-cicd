@@ -264,9 +264,8 @@ jobs:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
       - attach_workspace:
           at: ~/
-
-      - install_nodejs
       - install_awscli
+      - install_nodejs
       - restore_cache:
           keys: [frontend-build]
       # - run:  
@@ -311,10 +310,10 @@ jobs:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
       - attach_workspace:
           at: ~/
+      - install_nodejs        
       - install_awscli
       - install_ansible
-      - install_nodejs    
-
+   
       # - run:
       #     name: Install dependencies
       #     command: |
@@ -334,12 +333,12 @@ jobs:
             cd .. 
  
             cd .circleci/ansible
-            mkdir files 
+            # mkdir files 
             cd files
-            tar -c ../../backend -czvf artifact.tar.gz .
-            # tar -czf artifact.tar.gz dist/* package*
+            tar -c ../../../backend -czvf artifact.tar.gz . 
+            cd ../
 
-            
+             
             cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
