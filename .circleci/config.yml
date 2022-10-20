@@ -320,9 +320,9 @@ jobs:
       #     command: |
       #       cd backend
       #       npm install 
-      - run:
-          name: package backend 
-          command: |      
+      # - run:
+      #     name: package backend 
+      #     command: |      
             
       - run:
           name: Deploy backend
