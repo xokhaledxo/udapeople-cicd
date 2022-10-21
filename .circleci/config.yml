@@ -326,17 +326,34 @@ jobs:
       - run:
           name: Deploy backend
           command: |
-            cd backend
 
-            npm i 
+            cd backend
+            npm install
             npm run build
-            cd .. 
- 
+            #tar -czvf artifact.tar.gz dist
+            #cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cd ..
+            # Zip the directory
+            tar -czvf artifact.tar.gz backend
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
+            
             cd .circleci/ansible
-            mkdir files 
-            cd files
-            tar -c ../../../backend -czvf artifact.tar.gz . 
-            cd ../
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml          
+            # cd backend
+
+            # npm i 
+            # npm run build
+            # cd .. 
+ 
+            # cd .circleci/ansible
+            # mkdir files 
+            # cd files
+            # tar -c ../../../backend -czvf artifact.tar.gz . 
+            # cd ../
 
              
             # cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
@@ -344,9 +361,9 @@ jobs:
             # export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             # export TYPEORM_MIGRATIONS=./migrations/*.ts
           
-            echo "inventory.txt content is: "
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            # echo "inventory.txt content is: "
+            # cat inventory.txt
+            # ansible-playbook -i inventory.txt deploy-backend.yml
       
       - destroy-environment
       - revert-migrations              
