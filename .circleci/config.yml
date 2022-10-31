@@ -227,7 +227,7 @@ jobs:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
       - attach_workspace:
          at: ~/
-      
+
       - run:
           name: Configure server
           command: |
@@ -298,6 +298,7 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+
            
       - destroy-environment
       - revert-migrations              
@@ -330,7 +331,7 @@ jobs:
             cd files
             tar -C ../../../backend -czvf artifact.tar.gz .
             cd ../
-            # cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
