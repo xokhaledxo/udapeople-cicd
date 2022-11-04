@@ -117,13 +117,16 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys: [frontend-test]
       - run:
           name: Backend unit test
           command: |
              cd frontend
              npm install 
              npm test
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-test       
      
                 
   test-backend:
@@ -132,14 +135,16 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
+          keys: [backend-test]
       - run:
           name: Backend unit test
           command: |
              cd backend
              npm install 
              npm test
-     
+      - save_cache:
+            paths: [backend/node_modules]
+            key: backend-test
             
   scan-frontend:
     docker:
@@ -147,15 +152,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-           keys: [frontend-build]
+           keys: [frontend-scan]
       - run: 
            name: frontend scan 
            command: |
              cd frontend
              npm install 
-             npm audit fix
              npm audit fix --audit-level=critical --force
-
              npm audit --audit-level=critical
 
 
@@ -165,7 +168,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-           keys: [backend-build]
+           keys: [backend-scan]
       - run: 
            name: backend scan 
            command: |
