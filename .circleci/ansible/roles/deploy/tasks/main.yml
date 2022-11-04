@@ -1,20 +1,15 @@
-- name: "update apt packages."
-  become: yes
-  apt:
-    update_cache: yes
+---
+- name: "Creates backend app directory"
+  file:
+    path: ~/backend-app
+    state: directory
 
-- name: "upgrade packages"
-  become: yes
-  apt:
-    upgrade: yes
+- name: "Unarchive backend files"
+  unarchive:
+    src: artifact.tar.gz
+    dest: ~/backend-app
 
-
-- name: remove dependencies that are no longer required
-  become: yes
-  apt:
-    autoremove: yes
-
-- name: "install dependencies."
+- name: "Installing Node Dependencies"
   become: yes
   apt:
     name: ["nodejs", "npm"]
@@ -29,22 +24,12 @@
     production: yes
     state: present
 
-- name: Creates directory
-  file:
-    path: ~/backend-artifact
-    state: directory
-
-- name: "Unarchive"
-  unarchive:
-    src: artifact.tar.gz
-    dest: ~/backend-artifact
-
-
 - name: "Executing Node app with PM2"
   shell: |
-    cd ~/backend-artifact/backend/dist
+    cd ~/backend-app/dist
     pm2 stop default
     pm2 start main.js
+
   register: execute_node
 
 - name: print message
