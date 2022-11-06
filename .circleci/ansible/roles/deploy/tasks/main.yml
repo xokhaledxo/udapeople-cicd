@@ -10,26 +10,22 @@
     dest: ~/backend-app
 
 - name: "Installing Node Dependencies"
-  become: yes
-  apt:
-    name: ["nodejs", "npm"]
-    state: latest
-    update_cache: yes
-
-- name: "install pm2"
-  become: yes
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
-
+  shell: |
+    cd ~/backend-app
+    npm i
 - name: "Executing Node app with PM2"
   shell: |
     cd ~/backend-app/dist
-    pm2 stop default
-    pm2 start main.js
 
+    cd ../
+    npm install
+    
+    npm run build
+
+    sudo npm install forever -g
+    sudo npm install ts-node -g
+    forever start -c "ts-node -r tsconfig-paths/register -r dotenv/config src/main.ts" ./
+    
   register: execute_node
 
 - name: print message
