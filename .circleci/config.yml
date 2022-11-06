@@ -309,7 +309,6 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-
       - checkout
       - add_ssh_keys:
           fingerprints: ["e5:61:89:46:a0:75:28:68:b0:2f:2f:a7:4a:a6:3f:0f"]
@@ -317,12 +316,10 @@ jobs:
           at: ~/
       - install_nodejs        
       - install_awscli
-      - install_ansible
-            
+      - install_ansible         
       - run:
           name: Deploy backend
           command: |
-
             cd backend
             npm i 
             npm run build
