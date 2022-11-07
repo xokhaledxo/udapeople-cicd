@@ -284,9 +284,6 @@ jobs:
               --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "API_URL = ${API_URL}"
-            echo $BACKEND_IP >> frontend/.env
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
       - run:
@@ -321,27 +318,18 @@ jobs:
           name: Deploy backend
           command: |
             cd backend
-            npm install
+            npm i 
             npm run build
-            cd ..
-            # Zip the directory
-            tar -czvf artifact.tar.gz backend
-            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
-            # cd backend
-            # npm i 
-            # npm run build
-            # cd .. 
-            # cd .circleci/ansible
-            # mkdir files 
-            # cd files
-            # tar -C ../../../backend -czvf artifact.tar.gz .
-            # cd ../
-            # cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            cd .. 
+            cd .circleci/ansible
+            mkdir files 
+            cd files
+            tar -C ../../../backend -czvf artifact.tar.gz .
+            cd ../
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
-            
-            cd .circleci/ansible
+          
             echo "inventory.txt content is: "
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
@@ -359,21 +347,15 @@ jobs:
       - run:
           name: Backend smoke test
           command: |
-              BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-                --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                --output text)
-              export API_URL=http://${BACKEND_PUBLIC_IP}:3030
-              echo ${BACKEND_PUBLIC_IP}
-              echo backend-${CIRCLE_WORKFLOW_ID:0:7}
-              echo ${API_URL}
-
-              if curl "${API_URL}/api/status" | grep "ok"
-              then
-                  exit 0
-              else
-                  exit 1
-              fi
+            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                exit 0
+            else
+                exit 1
+            fi
       - run:
           name: Frontend smoke test
           command: |
